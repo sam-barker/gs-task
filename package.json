@@ -1,0 +1,21 @@
+{
+  "name": "gs-task",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/sam-barker/gs-task.git",
+  "author": "Samuel Barker <dev@sam-barker.co.uk>",
+  "license": "MIT",
+  "scripts": {
+    "install-browsers": "npx playwright install",
+    "format": "npx prettier . --write",
+    "test": "npx cucumber-js -p test_runner --tags @Automated"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.6.0",
+    "@playwright/test": "^1.43.1",
+    "@types/node": "^20.12.7",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
