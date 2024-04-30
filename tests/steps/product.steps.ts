@@ -1,84 +1,39 @@
 import { Given, When, Then } from '@cucumber/cucumber'
-import { page } from './world'
-import { expect } from '@playwright/test'
-
-const productData = [
-  {
-    productSku: 'gymshark-speed-t-shirt-black-aw23',
-    productId: '39654522814667',
-  },
-  {
-    productSku: 'gymshark-speed-t-shirt-artificial-teal-ss24',
-    productId: '39654820577483',
-  },
-  {
-    productSku: 'gymshark-speed-t-shirt-titanium-blue-ss24',
-    productId: '39654815924427',
-  },
-]
+import { productPage, bagPage } from './world'
+import { productData } from '../data/product'
 
 Given('the user is on a product page', async () => {
-  await page.goto(
-    'https://uk.gymshark.com/products/gymshark-speed-t-shirt-black-aw23',
-  )
-  await page.locator('#onetrust-accept-btn-handler').click()
+  await productPage.navigateTo(productData[0].productSku)
+  await productPage.dismissCookieBanner()
 })
 
 Given('multiple products are in my bag', async () => {
   for (let i = 0; i < productData.length; i += 1) {
     const productSku = productData[i].productSku
-    await page.goto(`https://uk.gymshark.com/products/${productSku}`)
+    await productPage.navigateTo(productSku)
     if (i === 0) {
-      await page.locator('#onetrust-accept-btn-handler').click()
+      await productPage.dismissCookieBanner()
     }
-    await page.locator("[data-locator-id='pdp-size-s-select']").click()
-    await page.locator("[data-locator-id='pdp-addToBag-submit']").click()
-    await page.waitForSelector(`text=${i + 1}`)
+    await productPage.addToBag(i + 1)
   }
 })
 
 When('adding the product to the bag', async () => {
-  await page.locator("[data-locator-id='pdp-size-s-select']").click()
-  await page.locator("[data-locator-id='pdp-addToBag-submit']").click()
+  await productPage.addToBag(1)
 })
 
 When('I remove the first product in my bag', async () => {
-  await page.locator("[data-locator-id*='miniBag-remove-']").first().click()
+  await bagPage.removeFirstProduct()
 })
 
 Then('the first product should no longer appear in the bag', async () => {
-  await expect(
-    page.locator(
-      `[data-locator-id="miniBag-productImage-${productData[0].productId}-select"]`,
-    ),
-  ).not.toBeVisible({
-    timeout: 20000,
-  })
+  await bagPage.expectProductNotInBag(productData[0].productId)
 })
 
 Then('the other products in the bag remain', async () => {
-  for (let i = 1; i < productData.length; i += 1) {
-    await expect(
-      page.locator(
-        `[data-locator-id="miniBag-productImage-${productData[i].productId}-select"]`,
-      ),
-    ).toBeVisible({
-      timeout: 20000,
-    })
-  }
+  await bagPage.expectRemainingProductsInBag(productData)
 })
 
 Then('the product should appear in the bag', async () => {
-  const miniBagIcon = page.locator("[data-locator-id='header-miniBag-select']")
-  if (await miniBagIcon.isVisible()) {
-    await miniBagIcon.click()
-  }
-
-  await expect(
-    page.locator(
-      `[data-locator-id="miniBag-productImage-${productData[0].productId}-select"]`,
-    ),
-  ).toBeVisible({
-    timeout: 20000,
-  })
+  await bagPage.expectProductInBag(productData[0].productId)
 })
